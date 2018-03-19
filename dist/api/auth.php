@@ -10,6 +10,7 @@ class Auth
 {
     public function check()
     {
+        file_put_contents('/tmp/xul', '200');
         $result['state'] = isset($_SESSION['username']) ? '200' : '401';
         echo json_encode($result);
         exit;

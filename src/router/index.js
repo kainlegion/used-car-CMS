@@ -93,6 +93,7 @@ for (let i = 0, len = routes.length; i < len; i++) {
 }
 const router = new Router({
   modules: modules,
+  mode: 'history',
   routes: routes
 })
 export default router

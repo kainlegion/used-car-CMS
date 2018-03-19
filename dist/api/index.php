@@ -10,12 +10,11 @@ if (!session_start()) {
     session_start();
 }
 
-require './' . $controller . '.php';
+//加载自动加载类文件
+class_exists('Autoload') or require __DIR__ . '/autoload.class.php';
+//实例化文件自动加载类
+Autoload::init();
 $controller = ucfirst($_GET['c']);
-if (class_exists($controller)) {
-    $tmp = new $controller();
-    $action = $_GET['a'];
-    if (method_exists($tmp, $action)) {
-        $tmp->$action();
-    }
-}
+$tmp = new $controller();
+$action = $_GET['a'];
+$tmp->$action();
