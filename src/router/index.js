@@ -4,6 +4,9 @@ import TableVue from '@/components/tableVue'
 import FormVue from '@/components/formVue'
 import Login from '@/components/Login'
 import NotFound from '@/components/NotFound'
+
+import addUser from '@/components/addUser'
+import resetPwd from '@/components/resetPwd'
 Vue.use(Router)
 const modules = [{
   path: '/user',
@@ -12,11 +15,11 @@ const modules = [{
   child: [{
     path: '/add-user',
     name: '添加客户',
-    component: FormVue
+    component: addUser
   }, {
     path: '/change-pwd',
     name: '修改密码',
-    component: FormVue
+    component: resetPwd
   }]
 }, {
   path: '/car',

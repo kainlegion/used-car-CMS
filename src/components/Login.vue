@@ -12,7 +12,7 @@
                 <Input v-model="formValidate.username" placeholder="Enter your username"></Input>
             </FormItem>
             <FormItem label="password" prop="password">
-                <Input v-model="formValidate.password" placeholder="Enter your password"></Input>
+                <Input v-model="formValidate.password" type="password" placeholder="Enter your password"></Input>
             </FormItem>
             <FormItem>
                 <Button type="primary" long size="large" @click="handleSubmit('formValidate')">登录</Button>
