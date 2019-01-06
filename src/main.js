@@ -7,8 +7,11 @@ import VueResource from 'vue-resource'
 import store from './store/index'
 import iView from 'iview/dist/iview.min'
 import 'iview/dist/styles/iview.css'
+import toolUtil from './utils/toolUtil.js'
 
 Vue.config.productionTip = false
+
+Vue.prototype.toolUtil = toolUtil
 
 Vue.use(VueResource)
 Vue.use(iView)
@@ -20,7 +23,7 @@ router.beforeEach((to, from, next) => {
     Vue.http.get('api/index.php?c=auth&a=signout')
     store.commit('setAuth', false)
   } else {
-    Vue.http.get('api/index.php?c=auth&a=check').then((responses) => {
+    Vue.http.post('api/index.php?c=auth&a=check', {'path': to.path}).then((responses) => {
       store.commit('setAuth', (responses.data.state === '200'))
       if (!store.state.auth) {
         next({path: '/login'})

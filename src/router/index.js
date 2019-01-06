@@ -1,34 +1,40 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import TableVue from '@/components/tableVue'
 import FormVue from '@/components/formVue'
 import Login from '@/components/Login'
 import NotFound from '@/components/NotFound'
 
+import userList from '@/components/userList'
 import addUser from '@/components/addUser'
-import resetPwd from '@/components/resetPwd'
+import editUser from '@/components/editUser'
+// import resetPwd from '@/components/resetPwd'
+
+import carList from '@/components/carList'
+import addCar from '@/components/addCar'
+import editCar from '@/components/editCar'
+
 Vue.use(Router)
 const modules = [{
   path: '/user',
-  name: '会员管理',
-  component: TableVue,
+  name: '用户管理',
+  component: userList,
   child: [{
     path: '/add-user',
-    name: '添加客户',
+    name: '添加用户',
     component: addUser
-  }, {
-    path: '/change-pwd',
-    name: '修改密码',
-    component: resetPwd
+  // }, {
+    // path: '/change-pwd',
+    // name: '修改密码',
+    // component: resetPwd
   }]
 }, {
   path: '/car',
   name: '车辆管理',
-  component: TableVue,
+  component: carList,
   child: [{
     path: '/add-car',
     name: '添加车辆',
-    component: FormVue
+    component: addCar
   }, {
     path: '/issue-car',
     name: '发布车辆',
@@ -37,32 +43,40 @@ const modules = [{
 }, {
   path: '/asset',
   name: '财务管理',
-  component: TableVue,
+  component: userList,
   child: [{
     path: '/total-asset',
     name: '总利润',
-    component: TableVue
+    component: userList
   }, {
     path: '/self-funds',
     name: '自有资金',
-    component: TableVue
+    component: userList
   }, {
     path: '/prepare-cost',
     name: '整备费用',
-    component: TableVue
+    component: userList
   }, {
     path: '/investment-amount',
     name: '投资金额',
-    component: TableVue
+    component: userList
   }, {
     path: '/distribute-profit',
     name: '分配利润',
-    component: TableVue
+    component: userList
   }]
 }]
 let routes = [{
   path: '/',
-  redirect: '/user'
+  redirect: '/car'
+}, {
+  name: '编辑用户',
+  path: '/edit-user',
+  component: editUser
+}, {
+  name: '编辑车辆',
+  path: '/edit-car',
+  component: editCar
 }, {
   name: '登出系统',
   path: '/login',

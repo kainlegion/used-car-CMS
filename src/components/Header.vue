@@ -20,7 +20,7 @@
         <div class="container">
             <img class="logo" src="../assets/logo.png" alt="Logo图片">
             <div class="nav-list">
-                <Submenu v-for="(m, key) in menu" :key="key" :name="m.name" @click.native="headerLink(m.path, m.name)">
+                <Submenu v-for="(m, key) in dealMenu" :key="key" :name="m.name" @click.native="headerLink(m.path, m.name)" v-if="m.name !== ''">
                     <template slot="title">
                         {{m.name}}
                     </template>
@@ -45,9 +45,21 @@
   export default {
     data () {
       return {
+        userType: 0,
         theme: 'light',
         menu: this.$router.options.modules,
         activeMenu: this.$router.currentRoute.meta.key
+      }
+    },
+    computed: {
+      dealMenu: function () {
+        this.getUserType()
+        for (let i in this.menu) {
+          if (this.userType === 2 && this.menu[i].name !== '车辆管理') {
+            this.menu.splice(i, 1)
+          }
+        }
+        return this.menu
       }
     },
     methods: {
@@ -57,6 +69,11 @@
       headerLink (path, name) {
         this.activeMenu = name
         this.$router.push(path)
+      },
+      getUserType () {
+        this.$http.post('api/index.php?c=auth&a=getUserType').then(function (res) {
+          this.userType = parseInt(res.data.userType)
+        })
       }
     }
   }

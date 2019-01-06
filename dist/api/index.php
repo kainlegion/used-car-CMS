@@ -10,10 +10,13 @@ if (!session_start()) {
     session_start();
 }
 
+ini_set('display_errors', 1);
+
 //加载自动加载类文件
 class_exists('Autoload') or require __DIR__ . '/autoload.class.php';
 //实例化文件自动加载类
 Autoload::init();
+
 $controller = ucfirst($_GET['c']);
 $tmp = new $controller();
 $action = $_GET['a'];

@@ -1,12 +1,15 @@
 <template>
   <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
-    <FormItem label="姓名" prop="name">
+    <FormItem label="真实姓名" prop="name">
       <Input v-model="formValidate.name" placeholder=""></Input>
+    </FormItem>
+    <FormItem label="手机号" prop="phone">
+      <Input v-model="formValidate.phone" placeholder=""></Input>
     </FormItem>
     <FormItem label="总金额" prop="totalAmount">
       <Input v-model="formValidate.totalAmount">
     </FormItem>
-    <FormItem label="帐号" prop="account">
+    <FormItem label="登录帐号" prop="account">
       <Input v-model="formValidate.account" placeholder=""></Input>
     </FormItem>
     <FormItem label="密码" prop="pwd">
@@ -17,7 +20,7 @@
     </FormItem>
     <FormItem>
       <Button type="primary" @click="handleSubmit('formValidate')">添加</Button>
-      <Button type="ghost" @click="handleReset('formValidate')" style="margin-left: 8px">重置</Button>
+      <Button type="ghost" @click="handleBack()" style="margin-left: 8px">用户列表</Button>
     </FormItem>
   </Form>
 </template>
@@ -56,6 +59,7 @@
       return {
         formValidate: {
           name: '',
+          phone: '',
           totalAmount: '',
           account: '',
           pwd: '',
@@ -84,14 +88,21 @@
       handleSubmit (name) {
         this.$refs[name].validate((valid) => {
           if (valid) {
-            this.$Message.success('Success!')
+            this.$http.post('api/index.php?c=user&a=add', this.formValidate).then((responses) => {
+              if (responses.body.state === '200') {
+                this.$Message.success(responses.body.title)
+                this.$refs[name].resetFields('formValidate')
+              } else {
+                this.$Message.error(responses.body.title)
+              }
+            })
           } else {
             this.$Message.error('Fail!')
           }
         })
       },
-      handleReset (name) {
-        this.$refs[name].resetFields()
+      handleBack () {
+        this.$router.push({path: 'user'})
       }
     }
   }
