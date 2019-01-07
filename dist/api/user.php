@@ -3,9 +3,9 @@ class User
 {
     public function __call($name, $arguments)
     {
-        
+
     }
-    
+
     public function userList()
     {
         $page = $_POST['page'];
@@ -14,14 +14,14 @@ class User
         $searchName = $_POST['searchName'];
         $sortColumn = $_POST['sortColumn'];
         $order = $_POST['order'];
-        
+
         $dbh = new db() or die('DB connection refused.');
         $sql = "select count(*) as count from user where type = 2";
         if (1 == $search) {
             $sql .= " and real_name like '%{$searchName}%'";
         }
         $count = $dbh->query($sql);
-        
+
         $sql = "select * from user where type = 2 ";
         if (1 == $search) {
             $sql .= " and real_name like '%{$searchName}%' ";
@@ -29,14 +29,17 @@ class User
         if (!empty($sortColumn) && !empty($order)) {
             $sql .= " order by {$sortColumn} {$order} ";
         }
-        $sql .= "limit " . ($page - 1) * $rowNum . ", {$rowNum}";
+        if (!empty($rowN)) {
+            $sql .= "limit " . ($page - 1) * $rowNum . ", {$rowNum}";
+        }
+        
         $list = $dbh->query($sql);
         if ($list) {
             $result['state'] = '200';
             $result['title'] = '';
             $result['desc'] = '';
             $result['data'] = (Object)array(
-                'total' => $count[0]['count'], 
+                'total' => $count[0]['count'],
                 'list' => $list
             );
         }else {
@@ -50,7 +53,7 @@ class User
         }
         echo json_encode($result);
     }
-    
+
     public function add()
     {
         $data = array(
@@ -64,7 +67,7 @@ class User
             ':regCapital' => $_POST['totalAmount'],
             ':totalCapital' => $_POST['totalAmount']
         );
-        
+
         $dbh = new db();
         $sql = "insert into user (username, passwd, type, state, real_name, phone, reg_time, reg_capital, total_capital) ";
         $sql .= "values (:username, :passwd, :type, :state, :realName, :phone, :regTime, :regCapital, :totalCapital)";
@@ -80,14 +83,14 @@ class User
         }
         echo json_encode($result);
     }
-    
+
     public function getUser()
     {
         if (!empty($_POST['uid'])) {
             $data = array(
                 $_POST['uid']
             );
-            
+
             $dbh = new db();
             $sql = "select * from user where id = ?";
             $userInfo = $dbh->query($sql, $data);
@@ -108,7 +111,7 @@ class User
         }
         echo json_encode($result);
     }
-    
+
     public function checkPasswd($uid, $passwd)
     {
         if (!empty($uid)) {
@@ -124,7 +127,7 @@ class User
             return false;
         }
     }
-    
+
     public function edit()
     {
         $data = array(
@@ -138,7 +141,7 @@ class User
             ':totalCapital' => $_POST['totalAmount'],
             ':id' => $_POST['uid']
         );
-        
+
         $dbh = new db();
         $sql = "update user ";
         $sql .= "set username = :username, passwd = :passwd, type = :type, state = :state, real_name = :realName, phone = :phone, reg_capital = :regCapital, total_capital = :totalCapital ";
@@ -155,7 +158,7 @@ class User
         }
         echo json_encode($result);
     }
-    
+
     public function delete()
     {
         $dbh = new db();

@@ -49,6 +49,11 @@
             :formatter="value => `${value}`.replace(/B(?=(d{3})+(?!d))/g, ',')"
             :parser="value => value.replace(/$s?|(,*)/g, '')"></InputNumber>
         </FormItem>
+        <FormItem label="投资人" prop="investor">
+            <div>
+                <Table border height="300" ref="selection" :columns="columns" :data="investorList" @on-selection-change="handleSelectionInvestor"></Table>
+            </div>
+        </FormItem>
         <FormItem label="投资人数" prop="numOfInvestment">
             <InputNumber
             :min="0"
@@ -64,7 +69,7 @@
             v-model="formValidate.proportion"
             style="width:auto"
             :formatter="value => `${value}%`"
-            :parser="value => value.replace('%', '')"></InputNumber> %
+            :parser="value => value.replace('%', '')"></InputNumber>
         </FormItem>
         <FormItem label="车辆状态" prop="state">
             <RadioGroup v-model="formValidate.state">
@@ -122,6 +127,26 @@
   export default {
     data () {
       return {
+        columns: [
+          {
+            type: 'selection',
+            width: 60,
+            align: 'center'
+          },
+          {
+            title: '真实姓名',
+            key: 'real_name'
+          },
+          {
+            title: '手机号',
+            key: 'phone'
+          },
+          {
+            title: '登录帐号',
+            key: 'username'
+          }
+        ],
+        investorList: [],
         emissionGradeList: [],
         formValidate: {
           brand: '',
@@ -134,6 +159,7 @@
           purchasePrice: 0,
           setupCost: 0,
           investment: 0,
+          investor: [],
           selfFunds: 0,
           salePrice: 0,
           numOfInvestment: 0,
@@ -167,6 +193,7 @@
     },
     created () {
       this.getEmissionGradeList()
+      this.getInvestorList()
     },
     methods: {
       handleSubmit (name) {
@@ -195,6 +222,14 @@
         this.$http.post('api/index.php?c=car&a=getEmissionGradeList').then((res) => {
           this.emissionGradeList = res.body
         })
+      },
+      getInvestorList () {
+        this.$http.post('api/index.php?c=user&a=userList').then((res) => {
+          this.investorList = res.body.data.list
+        })
+      },
+      handleSelectionInvestor (selection) {
+        this.formValidate.investor = selection
       },
       handleView (name) {
         this.imgName = name

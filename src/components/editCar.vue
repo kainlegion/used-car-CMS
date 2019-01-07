@@ -64,7 +64,7 @@
             v-model="formValidate.proportion"
             style="width:auto"
             :formatter="value => `${value}%`"
-            :parser="value => value.replace('%', '')"></InputNumber> %
+            :parser="value => value.replace('%', '')"></InputNumber>
         </FormItem>
         <FormItem label="车辆状态" prop="state">
             <RadioGroup v-model="formValidate.state">

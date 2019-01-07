@@ -15,12 +15,12 @@ class Car
         'E5' => '欧V',
         'E6' => '欧VI'
     );
-    
+
     public function __call($name, $arguments)
     {
-    
+
     }
-    
+
     public function carList()
     {
         $page = $_POST['page'];
@@ -30,14 +30,14 @@ class Car
         $searchName = $_POST['searchName'];
         $sortColumn = $_POST['sortColumn'];
         $order = $_POST['order'];
-    
+
         $dbh = new db() or die('DB connection refused.');
         $sql = "select count(*) as count from car where 1 = 1";
         if (1 == $search) {
             $sql .= " and {$searchColumn} like '%{$searchName}%'";
         }
         $count = $dbh->query($sql);
-    
+
         $sql = "select * from car where 1 = 1 ";
         if (1 == $search) {
             $sql .= " and {$searchColumn} like '%{$searchName}%' ";
@@ -70,30 +70,30 @@ class Car
         }
         echo json_encode($result);
     }
-    
+
     public function getEmissionGradeList()
     {
         echo json_encode($this->emissionGradeList);
     }
-    
+
     public function uploadPhoto()
     {
         var_dump($_FILES);
-        $imgname = $_FILES['file']['name']; 
+        $imgname = $_FILES['file']['name'];
         $tmp = $_FILES['file']['tmp_name'];
-        $filepath = __DIR__ . '/../photo/' . $imgname; 
-        if(move_uploaded_file($tmp, $filepath)){ 
+        $filepath = __DIR__ . '/../photo/' . $imgname;
+        if(move_uploaded_file($tmp, $filepath)){
             $result['state'] = '200';
             $result['title'] = 'upload success';
             $result['desc'] = '';
-        }else{ 
+        }else{
             $result['state'] = '201';
             $result['title'] = 'upload failed';
             $result['desc'] = '';
         }
         echo json_encode($result);
     }
-    
+
     public function deletePhoto()
     {
         $fileName = $_POST['fileName'];
@@ -108,7 +108,7 @@ class Car
         }
         echo json_encode($result);
     }
-    
+
     public function add()
     {
         $data = array(
@@ -127,14 +127,26 @@ class Car
             $_POST['desc'],
             $_POST['selfFunds']
         );
-        
+
+        $investor = $_POST['investor'];
+
         $uploadList = $_POST['uploadList'];
-    
+
         $dbh = new db();
         $sql = "insert into car ";
         $sql .= "values (0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $insertID = $dbh->query($sql, $data);
         if (0 < $insertID) {
+            if (!empty($investor)) {
+                foreach ($investor as $key => $value) {
+                    $data = array(
+                        $insertID,
+                        $value['id']
+                    );
+                    $sql = "insert into car_investor values (0, ?, ?)";
+                    $dbh->query($sql, $data);
+                }
+            }
             if (!empty($uploadList)) {
                 if (mkdir(__DIR__ . '/../photo/' . $insertID . '/')) {
                     foreach ($uploadList as $key => $value) {
@@ -160,14 +172,14 @@ class Car
         }
         echo json_encode($result);
     }
-    
+
     public function getCar()
     {
         if (!empty($_POST['cid'])) {
             $data = array(
                 $_POST['cid']
             );
-    
+
             $dbh = new db();
             $sql = "select * from car where id = ?";
             $userInfo = $dbh->query($sql, $data);
@@ -191,7 +203,7 @@ class Car
         }
         echo json_encode($result);
     }
-    
+
     public function edit()
     {
         $data = array(
@@ -209,7 +221,7 @@ class Car
             ':state' => $_POST['state'],
             ':desc' => $_POST['desc']
         );
-    
+
         $dbh = new db();
         $sql = "update car ";
         $sql .= "set brand = :brand, model = :model, particular_year = :date, emission_grade = :emissionGrade, state = :state, description = :desc, ";
@@ -227,7 +239,7 @@ class Car
         }
         echo json_encode($result);
     }
-    
+
     public function delete()
     {
         $dbh = new db();
