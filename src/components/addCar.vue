@@ -78,48 +78,54 @@
                 <Radio label="3">已售</Radio>
             </RadioGroup>
         </FormItem>
+        <FormItem label="发布状态" prop="release">
+            <RadioGroup v-model="formValidate.release">
+            	  <Radio label="1">发布</Radio>
+                <Radio label="2">未发布</Radio>
+            </RadioGroup>
+        </FormItem>
         <FormItem label="车辆图片" prop="picture">
-	        <div class="demo-upload-list" v-for="item in formValidate.uploadList">
-		        <template v-if="item.status === 'finished'">
-		            <img :src="'/photo/' + item.name">
-		            <div class="demo-upload-list-cover">
-		                <Icon type="ios-eye-outline" @click.native="handleView(item.name)"></Icon>
-		                <Icon type="ios-trash-outline" @click.native="handleRemove(item)"></Icon>
-		            </div>
-		        </template>
-		        <template v-else>
-		            <Progress v-if="item.showProgress" :percent="item.percentage" hide-info></Progress>
-		        </template>
-		    </div>
-		    <Upload
-		        ref="upload"
-		        :show-upload-list="false"
-		        :default-file-list="defaultList"
-		        :on-success="handleSuccess"
-		        :format="['jpg','jpeg','png']"
-		        :max-size="2048"
-		        :on-format-error="handleFormatError"
-		        :on-exceeded-size="handleMaxSize"
-		        :before-upload="handleBeforeUpload"
-		        multiple
-		        type="drag"
-		        action="api/index.php?c=car&a=uploadPhoto"
-		        style="display: inline-block;width:58px;">
-		        <div style="width: 58px;height:58px;line-height: 58px;">
-		            <Icon type="ios-camera" size="20"></Icon>
-		        </div>
-		    </Upload>
-		    <Modal title="View Image" v-model="visible">
-		        <img :src="'/photo/' + imgName" v-if="visible" style="width: 100%">
-		    </Modal>
-		</FormItem>
+  	        <div class="demo-upload-list" v-for="item in formValidate.uploadList">
+    		        <template v-if="item.status === 'finished'">
+    		            <img :src="'/photo/' + item.name">
+    		            <div class="demo-upload-list-cover">
+    		                <Icon type="ios-eye-outline" @click.native="handleView(item.name)"></Icon>
+    		                <Icon type="ios-trash-outline" @click.native="handleRemove(item)"></Icon>
+    		            </div>
+    		        </template>
+    		        <template v-else>
+    		            <Progress v-if="item.showProgress" :percent="item.percentage" hide-info></Progress>
+    		        </template>
+    		    </div>
+    		    <Upload
+    		        ref="upload"
+    		        :show-upload-list="false"
+    		        :default-file-list="defaultList"
+    		        :on-success="handleSuccess"
+    		        :format="['jpg','jpeg','png']"
+    		        :max-size="2048"
+    		        :on-format-error="handleFormatError"
+    		        :on-exceeded-size="handleMaxSize"
+    		        :before-upload="handleBeforeUpload"
+    		        multiple
+    		        type="drag"
+    		        action="api/index.php?c=car&a=uploadPhoto"
+    		        style="display: inline-block;width:58px;">
+    		        <div style="width: 58px;height:58px;line-height: 58px;">
+    		            <Icon type="ios-camera" size="20"></Icon>
+    		        </div>
+    		    </Upload>
+    		    <Modal title="View Image" v-model="visible">
+    		        <img :src="'/photo/' + imgName" v-if="visible" style="width: 100%">
+    		    </Modal>
+    		</FormItem>
         <FormItem label="描述" prop="desc">
             <Input v-model="formValidate.desc" type="textarea" :autosize="{minRows: 2,maxRows: 5}"
                    placeholder="Enter something..."></Input>
         </FormItem>
         <FormItem>
             <Button type="primary" @click="handleSubmit('formValidate')">保存</Button>
-            <Button type="ghost" @click="handleReset('formValidate')" style="margin-left: 8px">重置</Button>
+            <Button type="ghost" @click="handleBack()" style="margin-left: 8px">车辆列表</Button>
         </FormItem>
     </Form>
 </template>
@@ -164,7 +170,8 @@
           salePrice: 0,
           numOfInvestment: 0,
           proportion: 0,
-          uploadList: []
+          uploadList: [],
+          release: 2
         },
         imgName: '',
         visible: false,
@@ -212,8 +219,8 @@
           }
         })
       },
-      handleReset (name) {
-        this.$refs[name].resetFields()
+      handleBack () {
+        this.$router.push({path: '/car'})
       },
       selectDate (year) {
         this.formValidate.date = year

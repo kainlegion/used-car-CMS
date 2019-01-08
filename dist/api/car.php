@@ -1,6 +1,7 @@
 <?php
 class Car
 {
+    public $photoPath = __DIR__ . '/../photo/';
     private $emissionGradeList = array(
         'C1' => '国I',
         'C2' => '国II',
@@ -78,10 +79,9 @@ class Car
 
     public function uploadPhoto()
     {
-        var_dump($_FILES);
         $imgname = $_FILES['file']['name'];
         $tmp = $_FILES['file']['tmp_name'];
-        $filepath = __DIR__ . '/../photo/' . $imgname;
+        $filepath = $this->photoPath . $imgname;
         if(move_uploaded_file($tmp, $filepath)){
             $result['state'] = '200';
             $result['title'] = 'upload success';
@@ -96,8 +96,12 @@ class Car
 
     public function deletePhoto()
     {
+        $cid = $_POST['cid'];
         $fileName = $_POST['fileName'];
-        if (unlink(__DIR__ . '/../photo/' . $fileName)) {
+        if ($cid) {
+            $fileName = $cid . '/' . $fileName;
+        }
+        if (unlink($this->photoPath . $fileName)) {
             $result['state'] = '200';
             $result['title'] = 'delete success';
             $result['desc'] = '';
@@ -125,7 +129,8 @@ class Car
             $_POST['proportion'],
             $_POST['state'],
             $_POST['desc'],
-            $_POST['selfFunds']
+            $_POST['selfFunds'],
+            $_POST['release']
         );
 
         $investor = $_POST['investor'];
@@ -134,7 +139,7 @@ class Car
 
         $dbh = new db();
         $sql = "insert into car ";
-        $sql .= "values (0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql .= "values (0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $insertID = $dbh->query($sql, $data);
         if (0 < $insertID) {
             if (!empty($investor)) {
@@ -148,13 +153,13 @@ class Car
                 }
             }
             if (!empty($uploadList)) {
-                if (mkdir(__DIR__ . '/../photo/' . $insertID . '/')) {
+                if (is_dir($this->photoPath . $insertID . '/') or mkdir($this->photoPath . $insertID . '/')) {
                     foreach ($uploadList as $key => $value) {
-                        if (rename(__DIR__ . '/../photo/' . $value['name'], __DIR__ . '/../photo/' . $insertID . '/' . $value['name'])) {
+                        if (rename($this->photoPath . $value['name'], $this->photoPath . $insertID . '/' . $value['name'])) {
                             $data = array(
                                 $insertID,
                                 $key == 0 ? 1 : 0,
-                                __DIR__ . '/../photo/' . $insertID . '/' . $value['name']
+                                $this->photoPath . $insertID . '/' . $value['name']
                             );
                             $sql = "insert into car_picture values (0, ?, ?, ?)";
                             $dbh->query($sql, $data);
@@ -219,16 +224,50 @@ class Car
             ':numOfInvestment' => $_POST['numOfInvestment'],
             ':proportion' => $_POST['proportion'],
             ':state' => $_POST['state'],
-            ':desc' => $_POST['desc']
+            ':desc' => $_POST['desc'],
+            ':selfFunds' => $_POST['selfFunds'],
+            ':release' => $_POST['release']
         );
+
+        $investor = $_POST['investor'];
+
+        $uploadList = $_POST['uploadList'];
 
         $dbh = new db();
         $sql = "update car ";
         $sql .= "set brand = :brand, model = :model, particular_year = :date, emission_grade = :emissionGrade, state = :state, description = :desc, ";
-        $sql .= "purchase_price = :purchasePrice, setup_cost = :setupCost, investment = :investment, sale_price = :salePrice, num_of_investment = :numOfInvestment, proportion = :proportion ";
+        $sql .= "purchase_price = :purchasePrice, setup_cost = :setupCost, investment = :investment, sale_price = :salePrice, ";
+        $sql .= "num_of_investment = :numOfInvestment, proportion = :proportion, self_funds = :selfFunds, `release` = :release ";
         $sql .= "where id = :cid";
         $rowCount = $dbh->query($sql, $data);
         if (0 <= $rowCount) {
+            if (!empty($investor)) {
+                $sql = "delete from car_investor where car_id = ?";
+                $dbh->query($sql, array($data[':cid']));
+                foreach ($investor as $key => $value) {
+                    $data = array(
+                        $insertID,
+                        $value['id']
+                    );
+                    $sql = "insert into car_investor values (0, ?, ?)";
+                    $dbh->query($sql, $data);
+                }
+            }
+            if (!empty($uploadList)) {
+                if (is_dir($this->photoPath . $insertID . '/') or mkdir($this->photoPath . $insertID . '/')) {
+                    foreach ($uploadList as $key => $value) {
+                        if (rename($this->photoPath . $value['name'], $this->photoPath . $insertID . '/' . $value['name'])) {
+                            $data = array(
+                                $insertID,
+                                $key == 0 ? 1 : 0,
+                                $this->photoPath . $insertID . '/' . $value['name']
+                            );
+                            $sql = "insert into car_picture values (0, ?, ?, ?)";
+                            $dbh->query($sql, $data);
+                        }
+                    }
+                }
+            }
             $result['state'] = '200';
             $result['title'] = 'edit car successful';
             $result['desc'] = '';
