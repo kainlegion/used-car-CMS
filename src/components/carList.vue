@@ -68,6 +68,15 @@
             }
           },
           {
+            title: '发布状态',
+            key: 'release',
+            render: (h, params) => {
+              const color = params.row.release === '1' ? 'green' : 'gray'
+              const text = params.row.release === '1' ? '发布' : '未发布'
+              return h('Tag', {props: {type: 'success', color: `${color}`}}, `${text}`)
+            }
+          },
+          {
             title: '操作',
             key: 'action',
             render: (h, params) => {

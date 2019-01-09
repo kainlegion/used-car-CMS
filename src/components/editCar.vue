@@ -109,7 +109,7 @@
     		        :before-upload="handleBeforeUpload"
     		        multiple
     		        type="drag"
-    		        action="api/index.php?c=car&a=uploadPhoto"
+    		        :action="uploadUrl"
     		        style="display: inline-block;width:58px;">
     		        <div style="width: 58px;height:58px;line-height: 58px;">
     		            <Icon type="ios-camera" size="20"></Icon>
@@ -172,7 +172,7 @@
           numOfInvestment: 0,
           proportion: 0,
           uploadList: [],
-          release: 2
+          release: '2'
         },
         imgName: '',
         visible: false,
@@ -204,6 +204,11 @@
       this.getEmissionGradeList()
       this.getInvestorList()
     },
+    computed: {
+      uploadUrl () {
+        return 'api/index.php?c=car&a=uploadPhoto&cid=' + this.formValidate.cid
+      }
+    },
     methods: {
       carInfo () {
         if (this.formValidate.cid) {
@@ -225,6 +230,9 @@
             this.formValidate.numOfInvestment = carInfo.num_of_investment
             this.formValidate.proportion = carInfo.proportion
             this.formValidate.release = carInfo.release
+            for (let i in carInfo.photo) {
+              alert(i + '::' + carInfo.photo[i])
+            }
           })
         }
       },

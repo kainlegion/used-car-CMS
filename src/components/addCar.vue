@@ -171,7 +171,7 @@
           numOfInvestment: 0,
           proportion: 0,
           uploadList: [],
-          release: 2
+          release: '2'
         },
         imgName: '',
         visible: false,

@@ -79,18 +79,29 @@ class Car
 
     public function uploadPhoto()
     {
+        $cid = $_GET['cid'];
         $imgname = $_FILES['file']['name'];
         $tmp = $_FILES['file']['tmp_name'];
-        $filepath = $this->photoPath . $imgname;
-        if(move_uploaded_file($tmp, $filepath)){
-            $result['state'] = '200';
-            $result['title'] = 'upload success';
-            $result['desc'] = '';
-        }else{
-            $result['state'] = '201';
-            $result['title'] = 'upload failed';
+        $filePath = $this->photoPath;
+        if ($cid) {
+            $filePath .= $cid . '/';
+        }
+        if (is_dir($filePath) or mkdir($filePath)) {
+            if(move_uploaded_file($tmp, $filePath . $imgname)){
+                $result['state'] = '200';
+                $result['title'] = 'upload success';
+                $result['desc'] = '';
+            }else{
+                $result['state'] = '201';
+                $result['title'] = 'upload failed';
+                $result['desc'] = '';
+            }
+        }else {
+            $result['state'] = '202';
+            $result['title'] = 'photo path is not dir';
             $result['desc'] = '';
         }
+
         echo json_encode($result);
     }
 
@@ -180,9 +191,10 @@ class Car
 
     public function getCar()
     {
-        if (!empty($_POST['cid'])) {
+        $cid = $_POST['cid'];
+        if (!empty($cid)) {
             $data = array(
-                $_POST['cid']
+                $cid
             );
 
             $dbh = new db();
@@ -192,10 +204,21 @@ class Car
                 if ($userInfo[0]['particular_year']) {
                     $userInfo[0]['particular_year'] = date('Y-m-d', $userInfo[0]['particular_year']);
                 }
+                $investor = array();
+                $sql = "select user_id from car_investor where car_id = ?";
+                $investor = $dbh->query($sql, $data, 1);
+                $photo = array();
+                $sql = "select * from car_picture where car_id = ?";
+                $photo = $dbh->query($sql, $data);
+                if (!empty($photo)) {
+                    foreach ($photo as $key => &$value) {
+                        $value['pic_path'] = stripslashes($value['pic_path']);
+                    }
+                }
                 $result['state'] = '200';
                 $result['title'] = '';
                 $result['desc'] = '';
-                $result['data'] = (Object)array('carInfo' => $userInfo[0]);
+                $result['data'] = (Object)array('carInfo' => $userInfo[0], 'investor' => $investor, 'photo' => $photo);
             }else {
                 $result['state'] = '201';
                 $result['title'] = 'get car info failed';
@@ -245,26 +268,32 @@ class Car
                 $sql = "delete from car_investor where car_id = ?";
                 $dbh->query($sql, array($data[':cid']));
                 foreach ($investor as $key => $value) {
-                    $data = array(
-                        $insertID,
+                    $investorData = array(
+                        $data[':cid'],
                         $value['id']
                     );
                     $sql = "insert into car_investor values (0, ?, ?)";
-                    $dbh->query($sql, $data);
+                    $dbh->query($sql, $investorData);
                 }
             }
             if (!empty($uploadList)) {
-                if (is_dir($this->photoPath . $insertID . '/') or mkdir($this->photoPath . $insertID . '/')) {
-                    foreach ($uploadList as $key => $value) {
-                        if (rename($this->photoPath . $value['name'], $this->photoPath . $insertID . '/' . $value['name'])) {
-                            $data = array(
-                                $insertID,
-                                $key == 0 ? 1 : 0,
-                                $this->photoPath . $insertID . '/' . $value['name']
-                            );
-                            $sql = "insert into car_picture values (0, ?, ?, ?)";
-                            $dbh->query($sql, $data);
-                        }
+                $sql = "select id from car_picture where car_id = ? and thumbnail = 1";
+                $thumbnail = $dbh->query($sql, array($data[':cid']), 1);
+                foreach ($uploadList as $key => $value) {
+                    $picData = array(
+                        $data[':cid'],
+                        $this->photoPath . $data[':cid'] . '/' . $value['name']
+                    );
+                    $sql = "select id from car_picture where car_id = ? and pic_path = ?";
+                    $picExist = $dbh->query($sql, $picData, 1);
+                    if (!$picExist[0] && file_exists($this->photoPath . $data[':cid'] . '/' . $value['name'])) {
+                        $uploadData = array(
+                            $data[':cid'],
+                            ($key == 0 && !$thumbnail[0]) ? 1 : 0,
+                            $this->photoPath . $data[':cid'] . '/' . $value['name']
+                        );
+                        $sql = "insert into car_picture values (0, ?, ?, ?)";
+                        $dbh->query($sql, $uploadData);
                     }
                 }
             }
