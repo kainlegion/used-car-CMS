@@ -42,6 +42,23 @@
             }
           },
           {
+            title: '车辆照片',
+            key: 'thumbnail',
+            render: (h, params) => {
+              return h('div', [
+                h('img', {
+                  attrs: {
+                    src: '/photo/' + params.row.id + '/' + params.row.file_name
+                  },
+                  style: {
+                    width: '40px',
+                    height: '40px'
+                  }
+                })
+              ])
+            }
+          },
+          {
             title: '品牌',
             key: 'brand',
             sortable: 'custom'

@@ -40,7 +40,7 @@
             </Col>
             <Col span="8">
                 <span class="expand-key">分成比例: </span>
-                <span class="expand-value">{{ row.proportion }}</span>
+                <span class="expand-value">{{ row.proportion }}%</span>
             </Col>
         </Row>
     </div>

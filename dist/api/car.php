@@ -33,18 +33,18 @@ class Car
         $order = $_POST['order'];
 
         $dbh = new db() or die('DB connection refused.');
-        $sql = "select count(*) as count from car where 1 = 1";
+        $sql = "select count(*) as count from car where 1 = 1 ";
         if (1 == $search) {
-            $sql .= " and {$searchColumn} like '%{$searchName}%'";
+            $sql .= "and {$searchColumn} like '%{$searchName}%' ";
         }
         $count = $dbh->query($sql);
 
-        $sql = "select * from car where 1 = 1 ";
+        $sql = "select c.*, c_p.file_name from car as c left join car_picture as c_p on c.id = c_p.car_id and c_p.thumbnail = 1 where 1 = 1 ";
         if (1 == $search) {
-            $sql .= " and {$searchColumn} like '%{$searchName}%' ";
+            $sql .= "and c.{$searchColumn} like '%{$searchName}%' ";
         }
         if (!empty($sortColumn) && !empty($order)) {
-            $sql .= " order by {$sortColumn} {$order} ";
+            $sql .= "order by c.{$sortColumn} {$order} ";
         }
         $sql .= "limit " . ($page - 1) * $rowNum . ", {$rowNum}";
         $list = $dbh->query($sql);
@@ -80,14 +80,14 @@ class Car
     public function uploadPhoto()
     {
         $cid = $_GET['cid'];
-        $imgname = $_FILES['file']['name'];
+        $fileName = $_FILES['file']['name'];
         $tmp = $_FILES['file']['tmp_name'];
         $filePath = $this->photoPath;
         if ($cid) {
             $filePath .= $cid . '/';
         }
         if (is_dir($filePath) or mkdir($filePath)) {
-            if(move_uploaded_file($tmp, $filePath . $imgname)){
+            if(move_uploaded_file($tmp, $filePath . $fileName)){
                 $result['state'] = '200';
                 $result['title'] = 'upload success';
                 $result['desc'] = '';
@@ -109,39 +109,49 @@ class Car
     {
         $cid = $_POST['cid'];
         $fileName = $_POST['fileName'];
+
         if ($cid) {
-            $fileName = $cid . '/' . $fileName;
-        }
-        $data = array(
-            $cid,
-            $this->photoPath . $fileName
-        );
-        $sql = "select * from car_picture where car_id = ? and pic_path = ?";
-        $dbh = new db();
-        $picInfo = $dbh->query($sql, $data);
-        if ($picInfo[0]) {
-            $sql = "delete from car_picture where id = ?";
-            $deleteResult = $dbh->query($sql, array($picInfo[0]['id']));
-            if (1 == $deleteResult && 1 == $picInfo[0]['thumbnail']) {
-                $sql = "select * from car_picture where car_id = ? limit 1";
-                $nextPic = $dbh->query($sql, array($cid));
-                if ($nextPic[0]) {
-                    $sql = "update car_picture set thumbnail = 1 where id = ?";
-                    $dbh->query($sql, array($nextPic[0]['id']));
+            $data = array(
+                $cid,
+                $fileName
+            );
+            $sql = "select * from car_picture where car_id = ? and file_name = ?";
+            $dbh = new db();
+            $picInfo = $dbh->query($sql, $data);
+            if ($picInfo[0]) {
+                $sql = "delete from car_picture where id = ?";
+                $deleteResult = $dbh->query($sql, array($picInfo[0]['id']));
+                if (1 == $deleteResult) {
+                    if (1 == $picInfo[0]['thumbnail']) {
+                        $sql = "select * from car_picture where car_id = ? limit 1";
+                        $nextPic = $dbh->query($sql, array($cid));
+                        if ($nextPic[0]) {
+                            $sql = "update car_picture set thumbnail = 1 where id = ?";
+                            $dbh->query($sql, array($nextPic[0]['id']));
+                        }
+                    }
+                    unlink($this->photoPath . $cid . '/' . $fileName);
+                    $result['state'] = '200';
+                    $result['title'] = 'delete success';
+                    $result['desc'] = '';
+                }else {
+                    $result['state'] = '201';
+                    $result['title'] = 'delete failed';
+                    $result['desc'] = '';
                 }
+            }
+        }else {
+            if (unlink($this->photoPath . $fileName)) {
+                $result['state'] = '200';
+                $result['title'] = 'delete success';
+                $result['desc'] = '';
+            }else {
+                $result['state'] = '201';
+                $result['title'] = 'delete failed';
+                $result['desc'] = '';
             }
         }
 
-        if (1 == $deleteResult) {
-            unlink($this->photoPath . $fileName);
-            $result['state'] = '200';
-            $result['title'] = 'delete success';
-            $result['desc'] = '';
-        }else {
-            $result['state'] = '201';
-            $result['title'] = 'delete failed';
-            $result['desc'] = '';
-        }
         echo json_encode($result);
     }
 
@@ -191,7 +201,7 @@ class Car
                             $data = array(
                                 $insertID,
                                 $key == 0 ? 1 : 0,
-                                $this->photoPath . $insertID . '/' . $value['name']
+                                $value['name']
                             );
                             $sql = "insert into car_picture values (0, ?, ?, ?)";
                             $dbh->query($sql, $data);
@@ -233,10 +243,7 @@ class Car
                 $photo = $dbh->query($sql, $data);
                 if (!empty($photo)) {
                     foreach ($photo as $key => &$value) {
-                        if ($value['pic_path']) {
-                            $picPath = explode('/', $value['pic_path']);
-                            $value['name'] = end($picPath);
-                        }
+                        $value['name'] = $value['file_name'];
                         $value['status'] = 'finished';
                     }
                 }
@@ -307,15 +314,15 @@ class Car
                 foreach ($uploadList as $key => $value) {
                     $picData = array(
                         $data[':cid'],
-                        $this->photoPath . $data[':cid'] . '/' . $value['name']
+                        $value['name']
                     );
-                    $sql = "select id from car_picture where car_id = ? and pic_path = ?";
+                    $sql = "select id from car_picture where car_id = ? and file_name = ?";
                     $picExist = $dbh->query($sql, $picData, 1);
                     if (!$picExist[0] && file_exists($this->photoPath . $data[':cid'] . '/' . $value['name'])) {
                         $uploadData = array(
                             $data[':cid'],
                             ($key == 0 && !$thumbnail[0]) ? 1 : 0,
-                            $this->photoPath . $data[':cid'] . '/' . $value['name']
+                            $value['name']
                         );
                         $sql = "insert into car_picture values (0, ?, ?, ?)";
                         $dbh->query($sql, $uploadData);
