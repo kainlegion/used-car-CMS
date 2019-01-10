@@ -153,6 +153,7 @@
           }
         ],
         investorList: [],
+        checkedInvestor: [],
         emissionGradeList: [],
         formValidate: {
           cid: this.$route.params.cid,
@@ -197,12 +198,12 @@
       }
     },
     mounted () {
-      this.formValidate.uploadList = this.$refs.upload.fileList
-    },
-    created () {
       this.carInfo()
       this.getEmissionGradeList()
       this.getInvestorList()
+    },
+    created () {
+
     },
     computed: {
       uploadUrl () {
@@ -230,9 +231,9 @@
             this.formValidate.numOfInvestment = carInfo.num_of_investment
             this.formValidate.proportion = carInfo.proportion
             this.formValidate.release = carInfo.release
-            for (let i in carInfo.photo) {
-              alert(i + '::' + carInfo.photo[i])
-            }
+            this.$refs.upload.fileList = res.body.data.photo
+            this.formValidate.uploadList = this.$refs.upload.fileList
+            this.checkedInvestor = res.body.data.investor
           })
         }
       },
@@ -265,6 +266,11 @@
       },
       getInvestorList () {
         this.$http.post('api/index.php?c=user&a=userList').then((res) => {
+          for (let i in res.body.data.list) {
+            if (res.body.data.list[i].id in this.checkedInvestor) {
+              res.body.data.list[i]._checked = true
+            }
+          }
           this.investorList = res.body.data.list
         })
       },

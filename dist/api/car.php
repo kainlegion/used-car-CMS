@@ -112,7 +112,28 @@ class Car
         if ($cid) {
             $fileName = $cid . '/' . $fileName;
         }
-        if (unlink($this->photoPath . $fileName)) {
+        $data = array(
+            $cid,
+            $this->photoPath . $fileName
+        );
+        $sql = "select * from car_picture where car_id = ? and pic_path = ?";
+        $dbh = new db();
+        $picInfo = $dbh->query($sql, $data);
+        if ($picInfo[0]) {
+            $sql = "delete from car_picture where id = ?";
+            $deleteResult = $dbh->query($sql, array($picInfo[0]['id']));
+            if (1 == $deleteResult && 1 == $picInfo[0]['thumbnail']) {
+                $sql = "select * from car_picture where car_id = ? limit 1";
+                $nextPic = $dbh->query($sql, array($cid));
+                if ($nextPic[0]) {
+                    $sql = "update car_picture set thumbnail = 1 where id = ?";
+                    $dbh->query($sql, array($nextPic[0]['id']));
+                }
+            }
+        }
+
+        if (1 == $deleteResult) {
+            unlink($this->photoPath . $fileName);
             $result['state'] = '200';
             $result['title'] = 'delete success';
             $result['desc'] = '';
@@ -212,13 +233,17 @@ class Car
                 $photo = $dbh->query($sql, $data);
                 if (!empty($photo)) {
                     foreach ($photo as $key => &$value) {
-                        $value['pic_path'] = stripslashes($value['pic_path']);
+                        if ($value['pic_path']) {
+                            $picPath = explode('/', $value['pic_path']);
+                            $value['name'] = end($picPath);
+                        }
+                        $value['status'] = 'finished';
                     }
                 }
                 $result['state'] = '200';
                 $result['title'] = '';
                 $result['desc'] = '';
-                $result['data'] = (Object)array('carInfo' => $userInfo[0], 'investor' => $investor, 'photo' => $photo);
+                $result['data'] = (Object)array('carInfo' => $userInfo[0], 'investor' => array_flip($investor), 'photo' => $photo);
             }else {
                 $result['state'] = '201';
                 $result['title'] = 'get car info failed';
