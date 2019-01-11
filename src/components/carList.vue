@@ -23,6 +23,8 @@
         searchColumn: 'brand',
         searchName: '',
         search: 0,
+        searchState: [],
+        searchRelease: [],
         sortColumn: '',
         order: '',
         columnList: {
@@ -78,6 +80,22 @@
           {
             title: '车辆状态',
             key: 'state',
+            filters: [
+              {
+                label: '整备',
+                value: 1
+              },
+              {
+                label: '在售',
+                value: 2
+              },
+              {
+                label: '已售',
+                value: 3
+              }
+            ],
+            filterMultiple: false,
+            filterRemote: this.filterState,
             render: (h, params) => {
               const color = params.row.state === '1' ? 'yellow' : params.row.state === '2' ? 'blue' : 'gray'
               const text = params.row.state === '1' ? '整备' : params.row.state === '2' ? '在售' : '已售'
@@ -87,6 +105,18 @@
           {
             title: '发布状态',
             key: 'release',
+            filters: [
+              {
+                label: '发布',
+                value: 1
+              },
+              {
+                label: '未发布',
+                value: 2
+              }
+            ],
+            filterMultiple: false,
+            filterRemote: this.filterRelease,
             render: (h, params) => {
               const color = params.row.release === '1' ? 'green' : 'gray'
               const text = params.row.release === '1' ? '发布' : '未发布'
@@ -141,6 +171,8 @@
           'search': self.search,
           'searchColumn': self.searchColumn,
           'searchName': self.searchName,
+          'searchState': self.searchState,
+          'searchRelease': self.searchRelease,
           'sortColumn': self.sortColumn,
           'order': self.order
         }).then(function (res) {
@@ -175,6 +207,14 @@
       sort (data) {
         this.sortColumn = data.key
         this.order = data.order === 'normal' ? '' : data.order
+        this.getList()
+      },
+      filterState (value, row) {
+        this.searchState = value
+        this.getList()
+      },
+      filterRelease (value, row) {
+        this.searchRelease = value
         this.getList()
       }
     }

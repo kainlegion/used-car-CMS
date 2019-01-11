@@ -29,19 +29,33 @@ class Car
         $search = $_POST['search'];
         $searchColumn = $_POST['searchColumn'];
         $searchName = $_POST['searchName'];
+        $searchState = $_POST['searchState'];
+        $searchRelease = $_POST['searchRelease'];
         $sortColumn = $_POST['sortColumn'];
         $order = $_POST['order'];
 
         $dbh = new db() or die('DB connection refused.');
-        $sql = "select count(*) as count from car where 1 = 1 ";
+        $sql = "select count(c.id) as count from car as c where 1 = 1 ";
         if (1 == $search) {
-            $sql .= "and {$searchColumn} like '%{$searchName}%' ";
+            $sql .= "and c.{$searchColumn} like '%{$searchName}%' ";
+        }
+        if (!empty($searchState)) {
+            $sql .= "and c.state = {$searchState[0]} ";
+        }
+        if (!empty($searchRelease)) {
+            $sql .= "and c.release = {$searchRelease[0]} ";
         }
         $count = $dbh->query($sql);
 
         $sql = "select c.*, c_p.file_name from car as c left join car_picture as c_p on c.id = c_p.car_id and c_p.thumbnail = 1 where 1 = 1 ";
         if (1 == $search) {
             $sql .= "and c.{$searchColumn} like '%{$searchName}%' ";
+        }
+        if (!empty($searchState)) {
+            $sql .= "and c.state = {$searchState[0]} ";
+        }
+        if (!empty($searchRelease)) {
+            $sql .= "and c.release = {$searchRelease[0]} ";
         }
         if (!empty($sortColumn) && !empty($order)) {
             $sql .= "order by c.{$sortColumn} {$order} ";
