@@ -10,14 +10,15 @@ class Auth
 {
     private $authList = array(
         '/car',
-        '/carList'
+        '/carList',
+        '/edit-car'
     );
-    
+
     public function __call($name, $arguments)
     {
         $this->signout();
     }
-    
+
     public function check()
     {
         $path = $_POST['path'];
@@ -29,7 +30,7 @@ class Auth
                 $result['state'] = '200';
             }
         }
-        
+
         echo json_encode($result);
         exit;
     }
@@ -41,7 +42,7 @@ class Auth
             $sql = "select * from user where username = ?";
             $data = array($_POST['username']);
             $userInfo = $dbh->query($sql, $data);
-            
+
             if (hash('sha256', $_POST['password']) == $userInfo[0]['passwd']) {
 //             if (1 == 1) {
                 $_SESSION['username'] = $_POST['username'];
@@ -56,7 +57,7 @@ class Auth
                 $result['title'] = 'Wrong password!';
                 $result['desc'] = '';
             }
-            
+
             echo json_encode($result);
             exit;
         }
@@ -77,7 +78,7 @@ class Auth
         echo json_encode($result);
         exit;
     }
-    
+
     public function getUserType()
     {
         if (isset($_SESSION['username'])) {

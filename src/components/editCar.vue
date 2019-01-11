@@ -90,7 +90,7 @@
     		            <img :src="'/photo/' + formValidate.cid + '/' + item.name">
     		            <div class="demo-upload-list-cover">
     		                <Icon type="ios-eye-outline" @click.native="handleView(item.name)"></Icon>
-    		                <Icon type="ios-trash-outline" @click.native="handleRemove(item)"></Icon>
+    		                <Icon type="ios-trash-outline" @click.native="handleRemove(item)" v-if="userType !== 2"></Icon>
     		            </div>
     		        </template>
     		        <template v-else>
@@ -98,6 +98,7 @@
     		        </template>
     		    </div>
     		    <Upload
+                v-if="userType !== 2"
     		        ref="upload"
     		        :show-upload-list="false"
     		        :default-file-list="defaultList"
@@ -124,7 +125,7 @@
                    placeholder="Enter something..."></Input>
         </FormItem>
         <FormItem>
-            <Button type="primary" @click="handleSubmit('formValidate')">保存</Button>
+            <Button type="primary" @click="handleSubmit('formValidate')"  v-if="userType !== 2">保存</Button>
             <Button type="ghost" @click="handleBack()" style="margin-left: 8px">车辆列表</Button>
         </FormItem>
     </Form>
@@ -133,6 +134,7 @@
   export default {
     data () {
       return {
+        userType: 0,
         columns: [
           {
             type: 'selection',
@@ -198,6 +200,7 @@
       }
     },
     mounted () {
+      this.getUserType()
       this.carInfo()
       this.getEmissionGradeList()
       this.getInvestorList()
@@ -314,6 +317,11 @@
           })
         }
         return check
+      },
+      getUserType () {
+        this.$http.post('api/index.php?c=auth&a=getUserType').then(function (res) {
+          this.userType = parseInt(res.data.userType)
+        })
       }
     }
   }

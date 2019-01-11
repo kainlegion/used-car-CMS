@@ -15,6 +15,7 @@
     components: { expandRow },
     data () {
       return {
+        userType: 0,
         loading: false,
         current: 1,
         rowNum: 10,
@@ -147,6 +148,9 @@
                     type: 'error',
                     size: 'small'
                   },
+                  style: {
+                    display: this.buttonDisplay()
+                  },
                   on: {
                     click: () => {
                       this.delete(`${params.row.id}`)
@@ -160,6 +164,7 @@
       }
     },
     created () {
+      this.getUserType()
       this.getList('')
     },
     methods: {
@@ -216,6 +221,14 @@
       filterRelease (value, row) {
         this.searchRelease = value
         this.getList()
+      },
+      getUserType () {
+        this.$http.post('api/index.php?c=auth&a=getUserType').then(function (res) {
+          this.userType = parseInt(res.data.userType)
+        })
+      },
+      buttonDisplay () {
+        return (this.userType === 2) ? 'none' : 'inline-block'
       }
     }
   }
