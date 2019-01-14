@@ -354,12 +354,39 @@ class Car
         echo json_encode($result);
     }
 
+    private function delPhotoDir($dirName)
+    {
+        if ( $handle = opendir( $dirName ) ) {
+            while ( false !== ( $item = readdir( $handle ) ) ) {
+                if ( $item != “.” && $item != “..” ) {
+                    if ( is_dir( $dirName . '/' . $item ) ) {
+                        delPhotoDir( $dirName . '/' . $item );
+                    } else {
+                        unlink( $dirName . '/' . $item );
+                    }
+                }
+            }
+            closedir( $handle );
+            if( rmdir( $dirName ) ) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
     public function delete()
     {
+        $cid = $_POST['cid'];
         $dbh = new db();
         $sql = "delete from car where id = ?";
-        $rowCount = $dbh->query($sql, array($_POST['cid']));
+        $rowCount = $dbh->query($sql, array($cid));
         if ($rowCount) {
+            $sql = "delete from car_picture where car_id = ?";
+            $delPhotoRow = $dbh->query($sql, array($cid));
+            $delPhotoDir = delPhotoDir($this->photoPath . '/' . $cid);
             $result['state'] = '200';
             $result['title'] = 'delete car successful';
             $result['desc'] = '';
