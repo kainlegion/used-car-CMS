@@ -64,13 +64,12 @@ class User
             ':realName' => $_POST['name'],
             ':phone' => $_POST['phone'],
             ':regTime' => time(),
-            ':regCapital' => $_POST['totalAmount'],
-            ':totalCapital' => $_POST['totalAmount']
+            ':regCapital' => $_POST['totalAmount']
         );
 
         $dbh = new db();
-        $sql = "insert into user (username, passwd, type, state, real_name, phone, reg_time, reg_capital, total_capital) ";
-        $sql .= "values (:username, :passwd, :type, :state, :realName, :phone, :regTime, :regCapital, :totalCapital)";
+        $sql = "insert into user (username, passwd, type, state, real_name, phone, reg_time, reg_capital) ";
+        $sql .= "values (:username, :passwd, :type, :state, :realName, :phone, :regTime, :regCapital)";
         $insertID = $dbh->query($sql, $data);
         if (0 < $insertID) {
             $result['state'] = '200';
@@ -138,13 +137,12 @@ class User
             ':realName' => $_POST['name'],
             ':phone' => $_POST['phone'],
             ':regCapital' => $_POST['totalAmount'],
-            ':totalCapital' => $_POST['totalAmount'],
             ':id' => $_POST['uid']
         );
 
         $dbh = new db();
         $sql = "update user ";
-        $sql .= "set username = :username, passwd = :passwd, type = :type, state = :state, real_name = :realName, phone = :phone, reg_capital = :regCapital, total_capital = :totalCapital ";
+        $sql .= "set username = :username, passwd = :passwd, type = :type, state = :state, real_name = :realName, phone = :phone, reg_capital = :regCapital ";
         $sql .= "where id = :id";
         $rowCount = $dbh->query($sql, $data);
         if (0 <= $rowCount) {
@@ -162,7 +160,7 @@ class User
     public function delete()
     {
         $dbh = new db();
-        $sql = "delete from user where id = ?";
+        $sql = "update user set state = 3 where id = ?";
         $rowCount = $dbh->query($sql, array($_POST['uid']));
         if ($rowCount) {
             $result['state'] = '200';
