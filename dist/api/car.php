@@ -358,7 +358,7 @@ class Car
     {
         if ( $handle = opendir( $dirName ) ) {
             while ( false !== ( $item = readdir( $handle ) ) ) {
-                if ( $item != “.” && $item != “..” ) {
+                if ( $item != '.' && $item != '..' ) {
                     if ( is_dir( $dirName . '/' . $item ) ) {
                         delPhotoDir( $dirName . '/' . $item );
                     } else {

@@ -32,7 +32,7 @@ class User
         if (!empty($rowN)) {
             $sql .= "limit " . ($page - 1) * $rowNum . ", {$rowNum}";
         }
-        
+
         $list = $dbh->query($sql);
         if ($list) {
             $result['state'] = '200';
@@ -134,7 +134,7 @@ class User
             ':username' => $_POST['account'],
             ':passwd' => (true == $this->checkPasswd($_POST['uid'], $_POST['pwd'])) ? $_POST['pwd'] : hash('sha256', $_POST['pwd']),
             ':type' => 2,
-            ':state' => 1,
+            ':state' => $_POST['state'],
             ':realName' => $_POST['name'],
             ':phone' => $_POST['phone'],
             ':regCapital' => $_POST['totalAmount'],
@@ -171,6 +171,36 @@ class User
         }else {
             $result['state'] = '201';
             $result['title'] = 'delete user failed';
+            $result['desc'] = '';
+        }
+        echo json_encode($result);
+    }
+
+    public function asyncCheck()
+    {
+        $username = trim($_POST['username']);
+        $uid = $_POST['uid'];
+        if (!empty($username)) {
+            $data = array($username);
+            $dbh = new db();
+            $sql = 'select id from user where username = ?';
+            if ($uid) {
+                $sql .= ' and id != ?';
+                array_push($data, $uid);
+            }
+            $uid = $dbh->query($sql, $data, 1);
+            if (!empty($uid[0])) {
+                $result['state'] = '201';
+                $result['title'] = 'username already exist';
+                $result['desc'] = '';
+            }else {
+                $result['state'] = '200';
+                $result['title'] = 'username available';
+                $result['desc'] = '';
+            }
+        }else {
+            $result['state'] = '202';
+            $result['title'] = 'username cannot be empty';
             $result['desc'] = '';
         }
         echo json_encode($result);
