@@ -54,14 +54,6 @@
                 <Table border height="300" ref="selection" :columns="columns" :data="investorList" @on-selection-change="handleSelectionInvestor"></Table>
             </div>
         </FormItem>
-        <FormItem label="投资人数" prop="numOfInvestment">
-            <InputNumber
-            :min="0"
-            v-model="formValidate.numOfInvestment"
-            style="width:auto"
-            :formatter="value => `${value}`.replace(/B(?=(d{3})+(?!d))/g, ',')"
-            :parser="value => value.replace(/$s?|(,*)/g, '')"></InputNumber>
-        </FormItem>
         <FormItem label="分成比例" prop="proportion">
             <InputNumber
             :max="100"
@@ -172,7 +164,6 @@
           investor: [],
           selfFunds: 0,
           salePrice: 0,
-          numOfInvestment: 0,
           proportion: 0,
           uploadList: [],
           release: '2'
@@ -231,7 +222,6 @@
             this.formValidate.investment = carInfo.investment
             this.formValidate.selfFunds = carInfo.self_funds
             this.formValidate.salePrice = carInfo.sale_price
-            this.formValidate.numOfInvestment = carInfo.num_of_investment
             this.formValidate.proportion = carInfo.proportion
             this.formValidate.release = carInfo.release
             this.$refs.upload.fileList = res.body.data.photo

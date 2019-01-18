@@ -54,14 +54,6 @@
                 <Table border height="300" ref="selection" :columns="columns" :data="investorList" @on-selection-change="handleSelectionInvestor"></Table>
             </div>
         </FormItem>
-        <FormItem label="投资人数" prop="numOfInvestment">
-            <InputNumber
-            :min="0"
-            v-model="formValidate.numOfInvestment"
-            style="width:auto"
-            :formatter="value => `${value}`.replace(/B(?=(d{3})+(?!d))/g, ',')"
-            :parser="value => value.replace(/$s?|(,*)/g, '')"></InputNumber>
-        </FormItem>
         <FormItem label="分成比例" prop="proportion">
             <InputNumber
             :max="100"
@@ -168,7 +160,6 @@
           investor: [],
           selfFunds: 0,
           salePrice: 0,
-          numOfInvestment: 0,
           proportion: 0,
           uploadList: [],
           release: '2'

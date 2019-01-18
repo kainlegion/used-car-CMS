@@ -35,7 +35,7 @@ class Car
         $order = $_POST['order'];
 
         $dbh = new db() or die('DB connection refused.');
-        $sql = "select count(c.id) as count from car as c where 1 = 1 ";
+        $sql = "select count(c.id) as count from car as c where c.state > 0 ";
         if (1 == $search) {
             $sql .= "and c.{$searchColumn} like '%{$searchName}%' ";
         }
@@ -47,7 +47,7 @@ class Car
         }
         $count = $dbh->query($sql);
 
-        $sql = "select c.*, c_p.file_name from car as c left join car_picture as c_p on c.id = c_p.car_id and c_p.thumbnail = 1 where 1 = 1 ";
+        $sql = "select c.*, c_p.file_name from car as c left join car_picture as c_p on c.id = c_p.car_id and c_p.thumbnail = 1 where c.state > 0 ";
         if (1 == $search) {
             $sql .= "and c.{$searchColumn} like '%{$searchName}%' ";
         }
@@ -171,40 +171,64 @@ class Car
 
     public function add()
     {
-        $data = array(
-            $_POST['brand'],
-            $_POST['model'],
-            strtotime($_POST['date']),
-            $_POST['emissionGrade'],
-            time(),
-            $_POST['purchasePrice'],
-            $_POST['setupCost'],
-            $_POST['investment'],
-            $_POST['salePrice'],
-            $_POST['numOfInvestment'],
-            $_POST['proportion'],
-            $_POST['state'],
-            $_POST['desc'],
-            $_POST['selfFunds'],
-            $_POST['release']
-        );
-
+        $purchasePrice = $_POST['purchasePrice'];
+        $setupCost = $_POST['setupCost'];
+        $salePrice = $_POST['salePrice'];
+        $state = $_POST['state'];
+        $profit = $salePrice - $purchasePrice - $setupCost;
+        $proportion = $_POST['proportion'];
         $investor = $_POST['investor'];
-
+        $investment = $_POST['investment'];
         $uploadList = $_POST['uploadList'];
 
+        if (!empty($investor)) {
+            $numOfInvestor = count($investor);
+            $investmentFund = $investment / $numOfInvestor;
+        }else {
+            $numOfInvestor = 0;
+        }
+
+        if (3 == $state) {
+            $profitFund = $profit * $proportion / 100;
+        }else {
+            $profitFund = 0;
+        }
+
+        $data = array(
+            ':brand' => $_POST['brand'],
+            ':model' => $_POST['model'],
+            ':particular_year' => strtotime($_POST['date']),
+            ':emission_grade' => $_POST['emissionGrade'],
+            ':reg_time' => time(),
+            ':purchase_price' => $purchasePrice,
+            ':setup_cost' => $setupCost,
+            ':investment' => $investment,
+            ':sale_price' => $salePrice,
+            ':num_of_investor' => $numOfInvestor,
+            ':proportion' => $proportion,
+            ':state' => $state,
+            ':description' => $_POST['desc'],
+            ':self_funds' => $_POST['selfFunds'],
+            ':release' => $_POST['release'],
+            ':profit' => $profit
+        );
+
         $dbh = new db();
-        $sql = "insert into car ";
-        $sql .= "values (0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql  = "insert into car (brand, model, particular_year, emission_grade, reg_time, purchase_price, setup_cost, ";
+        $sql .= "investment, sale_price, num_of_investor, proportion, state, description, self_funds, release, profit) ";
+        $sql .= "values (:brand, :model, :particular_year, :emission_grade, :reg_time, :purchase_price, :setup_cost, ";
+        $sql .= ":investment, :sale_price, :num_of_investor, :proportion, :state, :description, :self_funds, :release, :profit)";
         $insertID = $dbh->query($sql, $data);
         if (0 < $insertID) {
             if (!empty($investor)) {
                 foreach ($investor as $key => $value) {
                     $data = array(
                         $insertID,
-                        $value['id']
+                        $value['id'],
+                        $investmentFund,
+                        $profitFund
                     );
-                    $sql = "insert into car_investor values (0, ?, ?)";
+                    $sql = "insert into car_investor values (0, ?, ?, ?, ?)";
                     $dbh->query($sql, $data);
                 }
             }
@@ -280,33 +304,53 @@ class Car
 
     public function edit()
     {
+        $purchasePrice = $_POST['purchasePrice'];
+        $setupCost = $_POST['setupCost'];
+        $salePrice = $_POST['salePrice'];
+        $state = $_POST['state'];
+        $profit = $salePrice - $purchasePrice - $setupCost;
+        $proportion = $_POST['proportion'];
+        $investor = $_POST['investor'];
+        $investment = $_POST['investment'];
+        $uploadList = $_POST['uploadList'];
+
+        if (!empty($investor)) {
+            $numOfInvestor = count($investor);
+            $investmentFund = $investment / $numOfInvestor;
+        }else {
+            $numOfInvestor = 0;
+        }
+
+        if (3 == $state) {
+            $profitFund = $profit * $proportion / 100;
+        }else {
+            $profitFund = 0;
+        }
+
         $data = array(
             ':cid' => $_POST['cid'],
             ':brand' => $_POST['brand'],
             ':model' => $_POST['model'],
             ':date' => strtotime($_POST['date']),
             ':emissionGrade' => $_POST['emissionGrade'],
-            ':purchasePrice' => $_POST['purchasePrice'],
-            ':setupCost' => $_POST['setupCost'],
-            ':investment' => $_POST['investment'],
-            ':salePrice' => $_POST['salePrice'],
-            ':numOfInvestment' => $_POST['numOfInvestment'],
-            ':proportion' => $_POST['proportion'],
-            ':state' => $_POST['state'],
+            ':purchasePrice' => $purchasePrice,
+            ':setupCost' => $setupCost,
+            ':investment' => $investment,
+            ':salePrice' => $salePrice,
+            ':numOfInvestor' => $numOfInvestor,
+            ':proportion' => $proportion,
+            ':state' => $state,
             ':desc' => $_POST['desc'],
             ':selfFunds' => $_POST['selfFunds'],
-            ':release' => $_POST['release']
+            ':release' => $_POST['release'],
+            ':profit' => $profit
         );
-
-        $investor = $_POST['investor'];
-
-        $uploadList = $_POST['uploadList'];
 
         $dbh = new db();
         $sql = "update car ";
         $sql .= "set brand = :brand, model = :model, particular_year = :date, emission_grade = :emissionGrade, state = :state, description = :desc, ";
         $sql .= "purchase_price = :purchasePrice, setup_cost = :setupCost, investment = :investment, sale_price = :salePrice, ";
-        $sql .= "num_of_investment = :numOfInvestment, proportion = :proportion, self_funds = :selfFunds, `release` = :release ";
+        $sql .= "num_of_investor = :numOfInvestor, proportion = :proportion, self_funds = :selfFunds, `release` = :release, profit = :profit ";
         $sql .= "where id = :cid";
         $rowCount = $dbh->query($sql, $data);
         if (0 <= $rowCount) {
@@ -316,9 +360,11 @@ class Car
                 foreach ($investor as $key => $value) {
                     $investorData = array(
                         $data[':cid'],
-                        $value['id']
+                        $value['id'],
+                        $investmentFund,
+                        $profitFund
                     );
-                    $sql = "insert into car_investor values (0, ?, ?)";
+                    $sql = "insert into car_investor values (0, ?, ?, ?, ?)";
                     $dbh->query($sql, $investorData);
                 }
             }
@@ -356,7 +402,7 @@ class Car
 
     private function delPhotoDir($dirName)
     {
-        if ( $handle = opendir( $dirName ) ) {
+        if ( is_dir($dirName) && $handle = opendir( $dirName ) ) {
             while ( false !== ( $item = readdir( $handle ) ) ) {
                 if ( $item != '.' && $item != '..' ) {
                     if ( is_dir( $dirName . '/' . $item ) ) {
@@ -381,12 +427,12 @@ class Car
     {
         $cid = $_POST['cid'];
         $dbh = new db();
-        $sql = "delete from car where id = ?";
+        $sql = "update car set state = 0 where id = ?";
         $rowCount = $dbh->query($sql, array($cid));
         if ($rowCount) {
             $sql = "delete from car_picture where car_id = ?";
             $delPhotoRow = $dbh->query($sql, array($cid));
-            $delPhotoDir = delPhotoDir($this->photoPath . '/' . $cid);
+            $delPhotoDir = $this->delPhotoDir($this->photoPath . $cid);
             $result['state'] = '200';
             $result['title'] = 'delete car successful';
             $result['desc'] = '';

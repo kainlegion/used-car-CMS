@@ -36,11 +36,15 @@
         <Row>
         	<Col span="8">
                 <span class="expand-key">投资人数: </span>
-                <span class="expand-value">{{ row.num_of_investment }}</span>
+                <span class="expand-value">{{ row.num_of_investor }}</span>
             </Col>
             <Col span="8">
                 <span class="expand-key">分成比例: </span>
                 <span class="expand-value">{{ row.proportion }}%</span>
+            </Col>
+            <Col span="8">
+                <span class="expand-key">利润: </span>
+                <span class="expand-value">{{ row.profit }}</span>
             </Col>
         </Row>
     </div>
