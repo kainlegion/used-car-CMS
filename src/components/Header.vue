@@ -54,12 +54,15 @@
     computed: {
       dealMenu: function () {
         this.getUserType()
-        for (let i in this.menu) {
-          if (this.userType === 2 && this.menu[i].name !== '车辆管理') {
-            this.menu.splice(i, 1)
-          }
+        // for (let i in this.menu) {
+          // if (this.userType === 2) {
+            // this.menu.splice(i, 1)
+          // }
+        // }
+        // return this.menu
+        if (this.userType === 1) {
+          return this.menu
         }
-        return this.menu
       }
     },
     methods: {

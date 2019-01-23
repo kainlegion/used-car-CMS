@@ -19,6 +19,10 @@ const modules = [{
   name: '用户管理',
   component: userList,
   child: [{
+    path: '/user',
+    name: '用户列表',
+    component: userList
+  }, {
     path: '/add-user',
     name: '添加用户',
     component: addUser
@@ -32,6 +36,10 @@ const modules = [{
   name: '车辆管理',
   component: carList,
   child: [{
+    path: '/car',
+    name: '车辆列表',
+    component: carList
+  }, {
     path: '/add-car',
     name: '添加车辆',
     component: addCar
