@@ -13,6 +13,8 @@ import carList from '@/components/carList'
 import addCar from '@/components/addCar'
 import editCar from '@/components/editCar'
 
+import financeList from '@/components/financeList'
+
 Vue.use(Router)
 const modules = [{
   path: '/user',
@@ -49,9 +51,9 @@ const modules = [{
     component: FormVue
   }]
 }, {
-  path: '/asset',
+  path: '/finance',
   name: '财务管理',
-  component: userList,
+  component: financeList,
   child: [{
     path: '/total-asset',
     name: '总利润',
